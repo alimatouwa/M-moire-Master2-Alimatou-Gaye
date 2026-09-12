@@ -1,106 +1,47 @@
-<div align="center">
+# Mémoire Master 2 — Détection et mitigation des attaques DDoS sur réseaux IPv6
 
-# 🛡️ Détection et mitigation automatisées des attaques DDoS sur réseaux IPv6
+Ce dépôt contient le code et les données de mon mémoire de Master 2, réalisé à l'Université Alioune Diop de Bambey (UFR SATIC).
 
-### par apprentissage automatique dans une architecture SDN-OpenFlow
+**Sujet :** Détection et mitigation automatisées des attaques DDoS sur réseaux IPv6 par apprentissage automatique dans une architecture SDN-OpenFlow.
 
-![IPv6](https://img.shields.io/badge/IPv6-2C2C2C?style=for-the-badge)
-![SDN](https://img.shields.io/badge/SDN-Ryu-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3-yellow?style=for-the-badge&logo=python&logoColor=white)
-![Machine Learning](https://img.shields.io/badge/ML-RandomForest%20%7C%20LSTM-green?style=for-the-badge)
+**Autrice :** Alimatou Gaye
+**Encadrant :** Docteur Sada Anne
 
-**Mémoire de Master 2**
+## De quoi il s'agit
 
-👩‍🎓 **Autrice :** Alimatou Gaye  •  👨‍🏫 **Encadrant :** Docteur Sada Anne
-🏛️ **Université Alioune Diop de Bambey — UFR SATIC**
+L'objectif de ce travail est de détecter et de bloquer automatiquement les attaques DDoS dans un réseau IPv6, à l'aide de l'apprentissage automatique et d'une architecture SDN.
 
-</div>
+Le contrôleur SDN capture le trafic et calcule des caractéristiques pour chaque source. Ces caractéristiques sont envoyées à un modèle qui décide si la source est en train d'attaquer. Si c'est le cas, le contrôleur installe une règle qui bloque cette source directement sur les commutateurs, sans couper le service pour les autres utilisateurs.
 
----
+Deux modèles ont été entraînés et comparés : un Random Forest et un LSTM. Le Random Forest a finalement été choisi pour le temps réel car il est plus rapide.
 
-## 📖 Présentation
+## Les fichiers
 
-Ce projet propose un système capable de **détecter** et de **bloquer automatiquement** les attaques par déni de service distribué (**DDoS**) dans un réseau **IPv6**, au sein d'une architecture **SDN** (Software Defined Networking).
+- `code_controleur_ryu.py` : le contrôleur SDN (Ryu). Il capture le trafic, calcule les caractéristiques et applique les blocages.
+- `service_detection.py` : le service qui contient les modèles et le tableau de bord.
+- `pretraitement_et_entrainement_des_modeles.ipynb` : le notebook où les données sont préparées et où les modèles sont entraînés et évalués.
+- `traficNormal.csv` : les données de trafic normal.
+- `TAnormal.csv` : les données de trafic d'attaque.
 
-Le principe est le suivant : le contrôleur SDN capture le trafic, calcule des caractéristiques par source, puis interroge un modèle d'apprentissage automatique qui décide si une source est malveillante. Le cas échéant, le contrôleur installe automatiquement une règle de blocage sur les commutateurs, tout en préservant la disponibilité du service.
+## Comment lancer le système
 
-Deux modèles ont été entraînés et comparés :
-- 🌳 un **Random Forest** (modèle classique), retenu pour la détection en temps réel grâce à sa rapidité ;
-- 🧠 un **LSTM** (modèle temporel), utilisé à des fins de comparaison.
-
----
-
-## 📂 Contenu du dépôt
-
-| Fichier | Description |
-|---|---|
-| `code_controleur_ryu.py` | Contrôleur SDN (Ryu) : capture du trafic, calcul des caractéristiques et application des blocages. |
-| `service_detection.py` | Service de détection (Flask) : héberge les modèles et le tableau de bord de supervision. |
-| `pretraitement_et_entrainement_des_modeles.ipynb` | Notebook de prétraitement, d'entraînement et d'évaluation des modèles. |
-| `traficNormal.csv` | Jeu de données — trafic normal. |
-| `TAnormal.csv` | Jeu de données — trafic d'attaque. |
-
----
-
-## ⚙️ Environnement technique
-
-| Composant | Outil |
-|---|---|
-| Simulation réseau | GNS3 + VirtualBox |
-| Contrôleur SDN | Ryu (OpenFlow 1.3) |
-| Commutateurs | Open vSwitch |
-| Traduction IPv4 ↔ IPv6 | NAT64 (Tayga) |
-| Apprentissage automatique | scikit-learn (Random Forest), TensorFlow/Keras (LSTM) |
-| Langage | Python 3 |
-
----
-
-## 🚀 Utilisation
-
-**1. Lancer le contrôleur SDN**
-```bash
+Lancer le contrôleur :
+```
 ryu-manager code_controleur_ryu.py --ofp-tcp-listen-port 6633 --ofp-listen-host ::
 ```
 
-**2. Lancer le service de détection et le tableau de bord**
-```bash
+Lancer le service et le tableau de bord :
+```
 python3 service_detection.py
 ```
-> Le tableau de bord est ensuite accessible à l'adresse : `http://127.0.0.1:5000/`
+Le tableau de bord est ensuite accessible sur http://127.0.0.1:5000/
 
-**3. Générer une attaque de test** (depuis la machine attaquante)
-```bash
-sudo python3 generateur_trafic_attaque.py
-```
+## Environnement utilisé
 
----
+Le projet a été réalisé sous GNS3 et VirtualBox, avec le contrôleur Ryu (OpenFlow 1.3), des commutateurs Open vSwitch et une passerelle NAT64 (Tayga). Les modèles ont été développés en Python avec scikit-learn pour le Random Forest et TensorFlow/Keras pour le LSTM.
 
-## 📊 Le jeu de données
+## Quelques résultats
 
-Constitué spécialement pour ce travail, faute de corpus public adapté aux attaques DDoS en IPv6 :
+Le jeu de données a été constitué à partir de 160 180 paquets capturés, regroupés en 3 517 fenêtres puis en 3 317 séquences.
 
-- **160 180 paquets** capturés au niveau du commutateur cœur ;
-- agrégés en **3 517 fenêtres** d'une seconde (2 624 normales · 893 d'attaque) ;
-- puis en **3 317 séquences** de dix fenêtres pour l'entraînement.
-
----
-
-## 🎯 Résultats
-
-| Mesure | 🌳 Random Forest | 🧠 LSTM |
-|---|:---:|:---:|
-| Exactitude | **0,979** | 0,978 |
-| Précision | **0,958** | 0,951 |
-| Rappel | 0,962 | **0,966** |
-| F1-score | **0,960** | 0,958 |
-| Temps d'inférence | **~64 ms** | ~149 ms |
-
-> Les deux modèles offrent des performances proches. Le **Random Forest** a été retenu pour le déploiement en temps réel en raison de son temps d'inférence nettement plus faible.
-
----
-
-<div align="center">
-
-*Mémoire de Master 2 — Université Alioune Diop de Bambey — 2025/2026*
-
-</div>
+Les deux modèles atteignent une exactitude d'environ 98 %. Leurs performances sont proches, mais le Random Forest est nettement plus rapide (environ 64 ms contre 149 ms pour le LSTM), ce qui explique son choix pour la détection en temps réel.
